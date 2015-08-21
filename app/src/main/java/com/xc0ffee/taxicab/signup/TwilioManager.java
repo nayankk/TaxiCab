@@ -77,4 +77,8 @@ public class TwilioManager implements Twilio.InitListener {
         }
     }
 
+    public void shutdown() {
+        Twilio.shutdown();
+    }
+
 }

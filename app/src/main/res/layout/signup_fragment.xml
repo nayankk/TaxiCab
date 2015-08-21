@@ -74,6 +74,5 @@
         android:layout_below="@+id/user_conf_password"
         android:layout_alignLeft="@+id/user_conf_password"
         android:layout_alignStart="@+id/user_conf_password"
-        android:layout_marginTop="25dp"
-        android:onClick="onSignUpClicked"/>
+        android:layout_marginTop="25dp"/>
 </RelativeLayout>
