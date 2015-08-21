@@ -16,6 +16,7 @@ import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.xc0ffee.taxicab.R;
+import com.xc0ffee.taxicab.signup.SignUpActivity;
 import com.xc0ffee.taxicab.utils.TaxiCabUtils;
 
 public class SignInActivity extends AppCompatActivity {
@@ -36,8 +37,10 @@ public class SignInActivity extends AppCompatActivity {
         findViewById(R.id.btn_signup).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Intent intent = new Intent(SignInActivity.this, SignUpActivity.class);
-                //startActivity(intent);
+                Intent intent = new Intent(SignInActivity.this, SignUpActivity.class);
+                intent.putExtra(SignUpActivity.KEY_EMAIL, mEmailText.getText().toString());
+                intent.putExtra(SignUpActivity.KEY_PASSWORD, mPassword.getText().toString());
+                startActivity(intent);
             }
         });
 

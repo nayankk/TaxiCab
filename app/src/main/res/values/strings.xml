@@ -10,4 +10,12 @@
     <string name="signup">Signup</string>
     <string name="email_invalid">Invalid Email</string>
     <string name="login_failure">Login failure, please try again</string>
+    <string name="name">Name</string>
+    <string name="phone_number">Phone number</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="passwd_mismatch">Password mismatch. Please retry.</string>
+    <string name="required_fields">One or more fields are missing.</string>
+    <string name="sms_verification_msg">We will send an SMS to %1$s number and automatically verify telephone number.</string>
+    <string name="sms_verification">SMS verification</string>
+    <string name="sms_sending_failed">Verification failed. Please try after some time</string>
 </resources>
