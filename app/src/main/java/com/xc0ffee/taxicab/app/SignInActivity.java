@@ -1,10 +1,6 @@
 package com.xc0ffee.taxicab.app;
 
-import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -40,7 +36,7 @@ public class SignInActivity extends AppCompatActivity {
                 Intent intent = new Intent(SignInActivity.this, SignUpActivity.class);
                 intent.putExtra(SignUpActivity.KEY_EMAIL, mEmailText.getText().toString());
                 intent.putExtra(SignUpActivity.KEY_PASSWORD, mPassword.getText().toString());
-                startActivity(intent);
+                startActivityForResult(intent, 0);
             }
         });
 
@@ -97,6 +93,16 @@ public class SignInActivity extends AppCompatActivity {
         if (mProgressDialog != null) {
             mProgressDialog.dismiss();
             mProgressDialog = null;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            Toast.makeText(this, "User authenticated", Toast.LENGTH_LONG).show();
+            setResult(RESULT_OK);
+            finish();
         }
     }
 }

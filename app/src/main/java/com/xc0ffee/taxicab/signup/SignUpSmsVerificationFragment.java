@@ -19,7 +19,7 @@ import android.view.ViewGroup;
 
 import com.xc0ffee.taxicab.R;
 
-public class SignUpSmsVerificationFragment extends Fragment {
+public class SignUpSmsVerificationFragment extends Fragment implements SignUpActivity.OnBackPressedListener {
 
     private static final String TAG = "SignUpSmsVerifFrag";
 
@@ -36,6 +36,7 @@ public class SignUpSmsVerificationFragment extends Fragment {
         filter.addAction("android.provider.Telephony.SMS_RECEIVED");
         getActivity().registerReceiver(mSmsListener, filter);
         mHandler = new MyHandler(Looper.getMainLooper());
+        ((SignUpActivity) getActivity()).setOnBackPressedListener(this);
     }
 
     @Override
@@ -109,5 +110,10 @@ public class SignUpSmsVerificationFragment extends Fragment {
                     break;
             }
         }
+    }
+
+    @Override
+    public void doBack() {
+        // Do nothing
     }
 }

@@ -1,5 +1,6 @@
 package com.xc0ffee.taxicab.signup;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -21,7 +22,7 @@ import com.xc0ffee.taxicab.utils.TaxiCabUtils;
 
 import java.util.Random;
 
-public class SignUpGetDetailsFragment extends Fragment {
+public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity.OnBackPressedListener {
 
     private static final String TAG = "SignUpGetDetailsFrag";
 
@@ -41,6 +42,7 @@ public class SignUpGetDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTwilioManager = new TwilioManager(getActivity());
+        ((SignUpActivity) getActivity()).setOnBackPressedListener(this);
     }
 
     @Nullable
@@ -189,5 +191,11 @@ public class SignUpGetDetailsFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         mTwilioManager.shutdown();
+    }
+
+    @Override
+    public void doBack() {
+        getActivity().setResult(Activity.RESULT_CANCELED);
+        getActivity().finish();
     }
 }

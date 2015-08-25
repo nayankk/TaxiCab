@@ -19,4 +19,5 @@
     <string name="sms_verification">SMS verification</string>
     <string name="sms_sending_failed">Verification failed. Please try after some time</string>
     <string name="sms_verification_indicator">Please wait while we verify your phone number. This can take upto 2 minutes.</string>
+    <string name="cont">Continue</string>
 </resources>

@@ -21,6 +21,12 @@ public class SignUpActivity extends AppCompatActivity {
 
     private int mVerifCode = INVALID_CODE;
 
+    private OnBackPressedListener mBackPressedListener;
+
+    public interface OnBackPressedListener {
+        void doBack();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,13 +42,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        FragmentManager fm = getFragmentManager();
-        int count = fm.getBackStackEntryCount();
-        if (count <= 1) {
-            super.onBackPressed();
-        } else {
-            fm.popBackStackImmediate("top_level", 0);
-        }
+        mBackPressedListener.doBack();
     }
 
     public int getVerificationCode() {
@@ -51,5 +51,9 @@ public class SignUpActivity extends AppCompatActivity {
 
     public void setVerificationCode(int code) {
         mVerifCode = code;
+    }
+
+    public void setOnBackPressedListener(OnBackPressedListener listener) {
+        mBackPressedListener = listener;
     }
 }
