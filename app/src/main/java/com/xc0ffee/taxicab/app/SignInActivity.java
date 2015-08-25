@@ -57,7 +57,7 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     private void onSignInBtnClicked() {
-        String email = String.valueOf(mEmailText.getText());
+        final String email = String.valueOf(mEmailText.getText());
 
         if (!TaxiCabUtils.isValidEmail(email)) {
             Toast.makeText(this, R.string.email_invalid, Toast.LENGTH_LONG).show();
@@ -72,7 +72,11 @@ public class SignInActivity extends AppCompatActivity {
                 Log.d(TAG, "User authenticated");
                 hideProgressDialog();
 
-                setResult(RESULT_OK);
+                Intent data = new Intent();
+                data.putExtra(TaxiCabMainActivity.KEY_USERNAME, mEmailText.getText().toString());
+                data.putExtra(TaxiCabMainActivity.KEY_PASSWORD, mPassword.getText().toString());
+                setResult(RESULT_OK, data);
+
                 finish();
             }
             @Override
@@ -97,11 +101,11 @@ public class SignInActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    protected void onActivityResult(int requestCode, int resultCode, Intent result) {
+        super.onActivityResult(requestCode, resultCode, result);
         if (resultCode == RESULT_OK) {
             Toast.makeText(this, "User authenticated", Toast.LENGTH_LONG).show();
-            setResult(RESULT_OK);
+            setResult(RESULT_OK, result);
             finish();
         } else {
             Toast.makeText(this, "Error while signing up. Please try again", Toast.LENGTH_LONG).show();

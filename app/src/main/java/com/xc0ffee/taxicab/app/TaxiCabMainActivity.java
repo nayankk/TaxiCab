@@ -1,6 +1,5 @@
 package com.xc0ffee.taxicab.app;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -26,7 +25,11 @@ public class TaxiCabMainActivity extends AppCompatActivity {
     final static private String PREF_PASSWORD = "password";
     final static private String PREF_KEY = "unknown";
     final static private String DEFAULT_KEY = "UNKNOWN_KEY";
+
     final static public String FIREBASE_URL = "https://taxi-cab.firebaseio.com/";
+    final static public String KEY_USERNAME = "key_user_name";
+    final static public String KEY_PASSWORD = "key_password";
+
     private static final String TAG = "TaxiCabMainActivity";
 
     private ListView mDrawerList;
@@ -137,11 +140,40 @@ public class TaxiCabMainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == Activity.RESULT_CANCELED)
+        if (resultCode == RESULT_CANCELED)
             finish();
+        else if (resultCode == RESULT_OK) {
+            secureStoreCredentials(data);
+        }
+    }
 
+    private void secureStoreCredentials(final Intent data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("NAYAN", "SecureStore ");
+                final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE);
+                String key = prefs.getString(PREF_KEY, null);
+                if (key == null) {
+                    try {
+                        key = ObscuredSharedPreferences.generateKey();
+                        prefs.edit().putString(PREF_KEY, key).apply();
+                    } catch (NoSuchAlgorithmException e) {
+                        key = DEFAULT_KEY;
+                        prefs.edit().putString(PREF_KEY, key).apply();
+                    }
+                }
+
+                ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(TaxiCabMainActivity.this,
+                        TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE));
+                obscuredPrefs.setKey(key);
+
+                obscuredPrefs.edit().putString(PREF_USERNAME, data.getStringExtra(KEY_USERNAME)).commit();
+                obscuredPrefs.edit().putString(PREF_PASSWORD, data.getStringExtra(KEY_PASSWORD)).commit();
+            }
+        }).run();
     }
 }
