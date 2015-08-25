@@ -115,15 +115,8 @@ public class SignUpGetDetailsFragment extends Fragment {
         public void onSmsSendSuccess() {
             Log.d(TAG, "onSmsSendSuccess");
             hideProgressDialog();
+            ((SignUpActivity) getActivity()).setVerificationCode(mRandom);
             switchToSmsVerificationFragment();
-             /*
-            Intent intent = new Intent(SignUpActivity.this, SmsVerificationActivity.class);
-            intent.putExtra(KEY_NAME, String.valueOf(mName.getText()));
-            intent.putExtra(KEY_EMAIL, String.valueOf(mEmailText.getText()));
-            intent.putExtra(KEY_PASSWORD, String.valueOf(mPasswordText.getText()));
-            intent.putExtra(KEY_PHNUMBER, String.valueOf(mPhoneNumber.getText()));
-            intent.putExtra(KEY_RANDOM_NUMBER, Integer.toString(mRandom));
-            startActivity(intent); */
         }
 
         @Override

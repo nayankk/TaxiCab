@@ -17,7 +17,9 @@ public class SignUpActivity extends AppCompatActivity {
     public static final String KEY_EMAIL = "user-email";
     public static final String KEY_PHNUMBER = "user-phone";
     public static final String KEY_RANDOM_NUMBER = "random-number";
+    public static final int INVALID_CODE = Integer.MIN_VALUE;
 
+    private int mVerifCode = INVALID_CODE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,5 +43,13 @@ public class SignUpActivity extends AppCompatActivity {
         } else {
             fm.popBackStackImmediate("top_level", 0);
         }
+    }
+
+    public int getVerificationCode() {
+        return mVerifCode;
+    }
+
+    public void setVerificationCode(int code) {
+        mVerifCode = code;
     }
 }
