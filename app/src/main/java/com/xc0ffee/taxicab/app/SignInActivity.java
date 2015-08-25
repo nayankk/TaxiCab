@@ -103,6 +103,8 @@ public class SignInActivity extends AppCompatActivity {
             Toast.makeText(this, "User authenticated", Toast.LENGTH_LONG).show();
             setResult(RESULT_OK);
             finish();
+        } else {
+            Toast.makeText(this, "Error while signing up. Please try again", Toast.LENGTH_LONG).show();
         }
     }
 }

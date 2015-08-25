@@ -38,11 +38,14 @@ public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity
     private TwilioManager mTwilioManager;
     private ProgressDialog mProgressDialog;
 
+    private SignUpActivity mActivity;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mTwilioManager = new TwilioManager(getActivity());
-        ((SignUpActivity) getActivity()).setOnBackPressedListener(this);
+        mActivity = (SignUpActivity) getActivity();
+        mActivity.setOnBackPressedListener(this);
     }
 
     @Nullable
@@ -65,7 +68,7 @@ public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity
         mEmailText.setText(getActivity().getIntent().getStringExtra(SignUpActivity.KEY_EMAIL));
         mPasswordText.setText(getActivity().getIntent().getStringExtra(SignUpActivity.KEY_PASSWORD));
 
-        getActivity().findViewById(R.id.btn_signup).setOnClickListener(new View.OnClickListener() {
+        mActivity.findViewById(R.id.btn_signup).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onSignUpClicked(v);
@@ -81,18 +84,18 @@ public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity
         String phNumber = String.valueOf(mPhoneNumber.getText());
 
         if (!TaxiCabUtils.isValidEmail(email)) {
-            Toast.makeText(getActivity(), R.string.email_invalid, Toast.LENGTH_LONG).show();
+            Toast.makeText(mActivity, R.string.email_invalid, Toast.LENGTH_LONG).show();
             return;
         }
 
         if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()
                 || name.isEmpty() || phNumber.isEmpty()) {
-            Toast.makeText(getActivity(), R.string.required_fields, Toast.LENGTH_LONG).show();
+            Toast.makeText(mActivity, R.string.required_fields, Toast.LENGTH_LONG).show();
             return;
         }
 
         if (!password.equals(confirmPassword)) {
-            Toast.makeText(getActivity(), R.string.passwd_mismatch, Toast.LENGTH_LONG).show();
+            Toast.makeText(mActivity, R.string.passwd_mismatch, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -101,6 +104,11 @@ public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity
             phoneNumber = "+1" + phoneNumber;
         else if (phoneNumber.startsWith("1"))
             phoneNumber = "+" + phoneNumber;
+
+        mActivity.setUsername(mEmailText.getText().toString());
+        mActivity.setPassword(mPasswordText.getText().toString());
+        mActivity.setName(mName.getText().toString());
+        mActivity.setPhoneNumber(mPhoneNumber.getText().toString());
 
         showSmsVerificationDialog(phoneNumber);
     }
@@ -117,7 +125,7 @@ public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity
         public void onSmsSendSuccess() {
             Log.d(TAG, "onSmsSendSuccess");
             hideProgressDialog();
-            ((SignUpActivity) getActivity()).setVerificationCode(mRandom);
+            mActivity.setVerificationCode(mRandom);
             switchToSmsVerificationFragment();
         }
 
@@ -168,7 +176,7 @@ public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity
     }
 
     private void verificationFailed() {
-        Toast.makeText(getActivity(), R.string.sms_sending_failed, Toast.LENGTH_LONG).show();
+        Toast.makeText(mActivity, R.string.sms_sending_failed, Toast.LENGTH_LONG).show();
     }
 
     private void hideProgressDialog() {
@@ -195,7 +203,7 @@ public class SignUpGetDetailsFragment extends Fragment implements SignUpActivity
 
     @Override
     public void doBack() {
-        getActivity().setResult(Activity.RESULT_CANCELED);
-        getActivity().finish();
+        mActivity.setResult(Activity.RESULT_CANCELED);
+        mActivity.finish();
     }
 }

@@ -1,5 +1,6 @@
 package com.xc0ffee.taxicab.signup;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -17,7 +18,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.firebase.client.AuthData;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.xc0ffee.taxicab.R;
+import com.xc0ffee.taxicab.app.TaxiCabMainActivity;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SignUpSmsVerificationFragment extends Fragment implements SignUpActivity.OnBackPressedListener {
 
@@ -25,9 +33,13 @@ public class SignUpSmsVerificationFragment extends Fragment implements SignUpAct
 
     private static final int VERIFICATION_SUCCESSFULL = 0;
     private static final int VERIFICATION_FAILED = 1;
+    private static final int USER_AUTHENTICATED = 2;
 
     private SmsListener mSmsListener = new SmsListener();
     private Handler mHandler;
+    private Firebase mFirebaseRef;
+
+    private SignUpActivity mActivity;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,7 +48,11 @@ public class SignUpSmsVerificationFragment extends Fragment implements SignUpAct
         filter.addAction("android.provider.Telephony.SMS_RECEIVED");
         getActivity().registerReceiver(mSmsListener, filter);
         mHandler = new MyHandler(Looper.getMainLooper());
-        ((SignUpActivity) getActivity()).setOnBackPressedListener(this);
+        mActivity = (SignUpActivity) getActivity();
+        mActivity.setOnBackPressedListener(this);
+
+        Firebase.setAndroidContext(getActivity());
+        mFirebaseRef = new Firebase(TaxiCabMainActivity.FIREBASE_URL);
     }
 
     @Override
@@ -68,7 +84,7 @@ public class SignUpSmsVerificationFragment extends Fragment implements SignUpAct
                             String msgBody = msgs[i].getMessageBody();
                             Log.d(TAG, "Message from " + msg_from + ", msgBody = " + msgBody);
                             if (msg_from.equals(TwilioManager.TWILIO_PHONE_NUMBER)) {
-                                if (msgBody.contains(Integer.toString(((SignUpActivity)getActivity()).getVerificationCode()))) {
+                                if (msgBody.contains(Integer.toString(mActivity.getVerificationCode()))) {
                                     Message msg = mHandler.obtainMessage(VERIFICATION_SUCCESSFULL);
                                     msg.sendToTarget();
                                 } else {
@@ -97,7 +113,11 @@ public class SignUpSmsVerificationFragment extends Fragment implements SignUpAct
 
             switch (msg.what) {
                 case VERIFICATION_SUCCESSFULL:
-                    Log.d(TAG, "Verification successfull");
+                    Log.d(TAG, "SMS verification successfull");
+                    createFirebaseUser();
+                    break;
+                case USER_AUTHENTICATED:
+                    Log.d(TAG, "User authenticated");
                     FragmentManager manager = getFragmentManager();
                     FragmentTransaction transaction = manager.beginTransaction();
                     Fragment verificationSuccess = new SignUpSmsVerified();
@@ -116,4 +136,48 @@ public class SignUpSmsVerificationFragment extends Fragment implements SignUpAct
     public void doBack() {
         // Do nothing
     }
+
+    private void createFirebaseUser() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mFirebaseRef.createUser(mActivity.getUsername(), mActivity.getPassword(), new Firebase.ValueResultHandler<Map<String, Object>>() {
+                    @Override
+                    public void onSuccess(Map<String, Object> result) {
+                        Log.d(TAG, "User creation success");
+                        mFirebaseRef.authWithPassword(mActivity.getUsername(), mActivity.getPassword(), mResultHandler);
+                    }
+
+                    @Override
+                    public void onError(FirebaseError firebaseError) {
+                        Log.d(TAG, "Error :" + firebaseError.getDetails());
+                    }
+                });
+
+            }
+        }).run();
+    }
+
+    private Firebase.AuthResultHandler mResultHandler = new Firebase.AuthResultHandler() {
+
+        @Override
+        public void onAuthenticated(AuthData authData) {
+            Log.d(TAG, "User authenticated");
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("name", String.valueOf(mActivity.getName()));
+            map.put("phnumber", String.valueOf(mActivity.getPhoneNumber()));
+            map.put("email", String.valueOf(mActivity.getUsername()));
+            map.put("role", "1");
+            mFirebaseRef.child("users").child(authData.getUid()).setValue(map);
+
+            Message msg = mHandler.obtainMessage(USER_AUTHENTICATED);
+            msg.sendToTarget();
+        }
+
+        @Override
+        public void onAuthenticationError(FirebaseError firebaseError) {
+            mActivity.setResult(Activity.RESULT_CANCELED);
+            mActivity.finish();
+        }
+    };
 }

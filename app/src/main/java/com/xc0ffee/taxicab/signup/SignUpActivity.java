@@ -23,6 +23,11 @@ public class SignUpActivity extends AppCompatActivity {
 
     private OnBackPressedListener mBackPressedListener;
 
+    private String mUsername;
+    private String mPassword;
+    private String mName;
+    private String mPhoneNumber;
+
     public interface OnBackPressedListener {
         void doBack();
     }
@@ -55,5 +60,37 @@ public class SignUpActivity extends AppCompatActivity {
 
     public void setOnBackPressedListener(OnBackPressedListener listener) {
         mBackPressedListener = listener;
+    }
+
+    public String getUsername() {
+        return mUsername;
+    }
+
+    public void setUsername(String username) {
+        mUsername = username;
+    }
+
+    public String getPassword() {
+        return mPassword;
+    }
+
+    public void setPassword(String password) {
+        mPassword = password;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public void setName(String name) {
+        mName = name;
+    }
+
+    public String getPhoneNumber() {
+        return mPhoneNumber;
+    }
+
+    public void setPhoneNumber(String phNumber) {
+        mPhoneNumber = phNumber;
     }
 }
