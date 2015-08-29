@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -32,8 +35,12 @@ public class TaxiCabMainActivity extends AppCompatActivity {
 
     private static final String TAG = "TaxiCabMainActivity";
 
+    private static final String STRING_PROFILE = "Your profile";
+    private static final String STRING_LOGOUT = "Logout";
+
+    private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-    private String[] mDrawerListItems = {"Your profile", "Logout"};
+    private String[] mDrawerListItems = {STRING_PROFILE, STRING_LOGOUT};
 
     private GreetingsDialog mGreetingsDialog;
     private String mUsername;
@@ -46,8 +53,10 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_taxi_cab_main);
 
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
         mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, mDrawerListItems));
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         mGreetingsDialog = new GreetingsDialog(this);
         mGreetingsDialog.show();
@@ -93,19 +102,23 @@ public class TaxiCabMainActivity extends AppCompatActivity {
                 }
             }
 
-            ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(TaxiCabMainActivity.this,
-                    TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE));
-            obscuredPrefs.setKey(key);
-            if (obscuredPrefs.getString(PREF_USERNAME, null) == null ||
-                    obscuredPrefs.getString(PREF_PASSWORD, null) == null) {
+            try {
+                ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(TaxiCabMainActivity.this,
+                        TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE));
+                obscuredPrefs.setKey(key);
+                if (obscuredPrefs.getString(PREF_USERNAME, null) == null ||
+                        obscuredPrefs.getString(PREF_PASSWORD, null) == null) {
+                    return Boolean.FALSE;
+                }
+
+                mUsername = obscuredPrefs.getString(PREF_USERNAME, null);
+                mPassword = obscuredPrefs.getString(PREF_PASSWORD, null);
+                if (mUsername == null || mPassword == null)
+                    return Boolean.FALSE;
+                return Boolean.TRUE;
+            } catch (Exception e) {
                 return Boolean.FALSE;
             }
-
-            mUsername = obscuredPrefs.getString(PREF_USERNAME, null);
-            mPassword = obscuredPrefs.getString(PREF_PASSWORD, null);
-            if (mUsername == null || mPassword == null)
-                return Boolean.FALSE;
-            return Boolean.TRUE;
         }
 
         @Override
@@ -116,8 +129,7 @@ public class TaxiCabMainActivity extends AppCompatActivity {
                 // Launch sign-in activity
                 Log.d(TAG, "No saved session, launch login activity");
                 hideGreetings();
-                Intent intent = new Intent(TaxiCabMainActivity.this, SignInActivity.class);
-                startActivityForResult(intent, 0);
+                launchSignInActivity();
             } else {
                 mFirebaseRef.authWithPassword(mUsername, mPassword, new Firebase.AuthResultHandler() {
                     @Override
@@ -139,6 +151,11 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         hideGreetings();
     }
 
+    private void launchSignInActivity() {
+        Intent intent = new Intent(TaxiCabMainActivity.this, SignInActivity.class);
+        startActivityForResult(intent, 0);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -147,6 +164,7 @@ public class TaxiCabMainActivity extends AppCompatActivity {
             finish();
         else if (resultCode == RESULT_OK) {
             secureStoreCredentials(data);
+
         }
     }
 
@@ -154,7 +172,6 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d("NAYAN", "SecureStore ");
                 final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE);
                 String key = prefs.getString(PREF_KEY, null);
                 if (key == null) {
@@ -175,5 +192,34 @@ public class TaxiCabMainActivity extends AppCompatActivity {
                 obscuredPrefs.edit().putString(PREF_PASSWORD, data.getStringExtra(KEY_PASSWORD)).commit();
             }
         }).run();
+    }
+
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
+
+    private void selectItem(int position) {
+        switch (mDrawerListItems[position]) {
+            case STRING_PROFILE:
+                Log.d("NAYAN", "Your profile clicked");
+                break;
+            case STRING_LOGOUT:
+                discardCredentials();
+                launchSignInActivity();
+                break;
+        }
+        mDrawerLayout.closeDrawers();
+    }
+
+    private void discardCredentials() {
+        try {
+            ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(TaxiCabMainActivity.this,
+                    TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE));
+            obscuredPrefs.edit().putString(PREF_USERNAME, null).apply();
+            obscuredPrefs.edit().putString(PREF_PASSWORD, null).apply();
+        } catch (Exception e) {}
     }
 }
