@@ -1,5 +1,6 @@
 package com.xc0ffee.taxicab.app;
 
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -76,6 +77,7 @@ public class TaxiCabMainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         hideGreetings();
+        MapsFragment.clear();
     }
 
     private void hideGreetings() {
@@ -149,6 +151,7 @@ public class TaxiCabMainActivity extends AppCompatActivity {
 
     private void onUserAuthenticated() {
         hideGreetings();
+        showMapsFragment();
     }
 
     private void launchSignInActivity() {
@@ -221,5 +224,11 @@ public class TaxiCabMainActivity extends AppCompatActivity {
             obscuredPrefs.edit().putString(PREF_USERNAME, null).apply();
             obscuredPrefs.edit().putString(PREF_PASSWORD, null).apply();
         } catch (Exception e) {}
+    }
+
+    private void showMapsFragment() {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.maps_fragment, MapsFragment.getInstance());
+        transaction.commitAllowingStateLoss();
     }
 }
