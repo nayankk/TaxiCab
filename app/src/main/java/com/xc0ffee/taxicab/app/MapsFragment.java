@@ -103,6 +103,8 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
 
     @Override
     public void onDriverPositionChanged(DriverPositionManager.Driver driver) {
+        if (mMap == null)
+            return;
         if (driver.getAvailable().equalsIgnoreCase("1")) {
             LatLng position = new LatLng(Double.valueOf(driver.getLongitude()),
                     Double.valueOf(driver.getLatitude()));

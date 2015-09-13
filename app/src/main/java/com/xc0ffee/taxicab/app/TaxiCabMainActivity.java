@@ -167,7 +167,6 @@ public class TaxiCabMainActivity extends AppCompatActivity {
             finish();
         else if (resultCode == RESULT_OK) {
             secureStoreCredentials(data);
-
         }
     }
 
