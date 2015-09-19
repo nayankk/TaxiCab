@@ -96,8 +96,8 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
             LatLng latLng = new LatLng(latitude, longitude);
-            CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng, 12);
-            mMap.animateCamera(yourLocation);
+            CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng, 14);
+            mMap.moveCamera(yourLocation);
         }
     }
 
