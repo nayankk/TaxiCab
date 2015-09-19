@@ -23,4 +23,8 @@
 
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="wait_time_infinte">--</string>
+    <string name="wait_minutes">MIN</string>
+    <string name="set_your_location">Set your Location</string>
+    <string name="image_pin_drop">Pin drop</string>
 </resources>

@@ -1,46 +1,79 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <fragment
+        android:id="@+id/location_map"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:name="com.google.android.gms.maps.MapFragment"/>
 
-        <fragment
-            android:id="@+id/location_map"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:name="com.google.android.gms.maps.MapFragment"/>
+    <LinearLayout
+        android:id="@+id/locationMarker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="30dp"
+        android:gravity="center"
+        android:orientation="vertical" >
 
         <LinearLayout
-            android:id="@+id/locationMarker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="30dp"
-            android:gravity="center"
-            android:orientation="vertical" >
+            android:background="@drawable/rounded_corner_map"
+            android:orientation="horizontal"
+            android:minWidth="170dp">
+
+            <LinearLayout
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:paddingStart="1dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="1dp"
+                android:paddingBottom="1dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="2dp"
+                android:background="@drawable/circle_shape"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/white"
+                    android:text="@string/wait_time_infinte"
+                    android:id="@+id/travel_time"
+                    android:layout_gravity="center_horizontal"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="8sp"
+                    android:textColor="@android:color/white"
+                    android:text="@string/wait_minutes"
+                    android:layout_gravity="center_horizontal"/>
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/locationMarkertext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/rounded_corner_map"
                 android:gravity="center"
-                android:minWidth="180dp"
-                android:paddingLeft="2dp"
-                android:paddingRight="2dp"
-                android:text="Set your Location "
-                android:textColor="@android:color/white" />
-
-            <ImageView
-                android:id="@+id/imageView1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_pin_drop_black_48dp" />
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:layout_gravity="center_vertical"
+                android:text="@string/set_your_location"
+                android:textColor="@android:color/white"
+                android:contentDescription="@string/set_your_location"/>
         </LinearLayout>
 
-    </FrameLayout>
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_pin_drop_black_48dp"
+            android:contentDescription="@string/image_pin_drop"/>
+    </LinearLayout>
 
-</RelativeLayout>
+</FrameLayout>
