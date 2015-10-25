@@ -34,6 +34,8 @@ public class TaxiCabMainActivity extends AppCompatActivity {
     final static public String KEY_USERNAME = "key_user_name";
     final static public String KEY_PASSWORD = "key_password";
 
+    final static public int LOCATION_PERMISSION_REQUEST_ID = 1;
+
     private static final String TAG = "TaxiCabMainActivity";
 
     private static final String STRING_PROFILE = "Your profile";
