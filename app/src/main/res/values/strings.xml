@@ -27,4 +27,6 @@
     <string name="wait_minutes">MIN</string>
     <string name="set_your_location">Set your Location</string>
     <string name="image_pin_drop">Pin drop</string>
+
+    <string name="api_key" translatable="false">AIzaSyDJ95ggg0cfLnZvU_78R6O_rpkG2yt16wk</string>
 </resources>
