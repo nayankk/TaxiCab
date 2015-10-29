@@ -68,6 +68,8 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         mFirebaseRef = new Firebase(FIREBASE_URL);
 
         new CheckUserCredentials().execute();
+
+        GooglePlayServicesManager.getMe(this);
     }
 
     @Override

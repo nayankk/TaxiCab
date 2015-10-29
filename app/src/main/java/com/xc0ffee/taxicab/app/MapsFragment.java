@@ -2,12 +2,9 @@ package com.xc0ffee.taxicab.app;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,7 +22,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.xc0ffee.taxicab.R;
 import com.xc0ffee.taxicab.utils.TaxiCabUtils;
 
-public class MapsFragment extends Fragment implements DriverPositionManager.DriverPositionListener{
+public class MapsFragment extends Fragment implements
+        DriverPositionManager.DriverPositionListener,
+        GooglePlayServicesManager.LocationUpdateListener,
+        GoogleMap.OnCameraChangeListener {
 
     private GoogleMap mMap = null;
 
@@ -67,7 +67,7 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Log.d("NAYAN", "Pick me from here clicked");
+                        Log.d(TAG, "Pick me from here clicked");
                     }
                 }
         );
@@ -83,6 +83,13 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
     @Override
     public void onResume() {
         super.onResume();
+        GooglePlayServicesManager.getMe(getActivity()).onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        GooglePlayServicesManager.getMe(getActivity()).onPause();
     }
 
     @Override
@@ -114,42 +121,7 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
 
     private void setUpMap() {
         mMap.setMyLocationEnabled(true);
-        LocationManager locationManager =
-                (LocationManager) getActivity().getSystemService(Activity.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
-        String provider = locationManager.getBestProvider(criteria, true);
-        try {
-            Location location = locationManager.getLastKnownLocation(provider);
-            if (location != null) {
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                LatLng latLng = new LatLng(latitude, longitude);
-                CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng, 14);
-                Log.d("NAYAN", "myLocation = " + yourLocation.toString());
-                mMap.moveCamera(yourLocation);
-                mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
-                    @Override
-                    public void onCameraChange(CameraPosition cameraPosition) {
-                        new ComputeTravelTime(getActivity(), cameraPosition.target,
-                                new ComputeTravelTime.SelectedDriverDetails() {
-                                    @Override
-                                    public void onDriverSelected(String driveId,
-                                                                 final int travelTime) {
-                                        getActivity().runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                ((TextView)getView().findViewById(R.id.travel_time))
-                                                        .setText(Integer.toString(travelTime/60));
-                                            }
-                                        });
-                                    }
-                                });
-                    }
-                });
-            }
-        } catch (SecurityException e) {
-            Log.d(TAG, "Unable to access localation permission");
-        }
+        GooglePlayServicesManager.getMe(getActivity()).addLocationUpdateListner(this);
     }
 
     @Override
@@ -170,5 +142,44 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
         if (requestCode == TaxiCabMainActivity.LOCATION_PERMISSION_REQUEST_ID) {
             setUpMap();
         }
+    }
+
+    @Override
+    public void onLocationFound(Location location) {
+        adjustCameraPosition(location);
+    }
+
+    @Override
+    public void onLocationUpdated(Location location) {
+        adjustCameraPosition(location);
+    }
+
+    private void adjustCameraPosition(Location location) {
+        if (location != null) {
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+            LatLng latLng = new LatLng(latitude, longitude);
+            CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng, 15);
+            mMap.moveCamera(yourLocation);
+            mMap.setOnCameraChangeListener(this);
+        }
+    }
+
+    @Override
+    public void onCameraChange(CameraPosition cameraPosition) {
+        new ComputeTravelTime(getActivity(), cameraPosition.target,
+                new ComputeTravelTime.SelectedDriverDetails() {
+                    @Override
+                    public void onDriverSelected(String driveId,
+                                                 final int travelTime) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ((TextView) getView().findViewById(R.id.travel_time))
+                                        .setText(Integer.toString(travelTime / 60));
+                            }
+                        });
+                    }
+                });
     }
 }
