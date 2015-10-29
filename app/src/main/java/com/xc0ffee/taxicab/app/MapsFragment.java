@@ -63,6 +63,14 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
             return null;
 
         View v = inflater.inflate(R.layout.maps_fragment, container, false);
+        v.findViewById(R.id.locationMarkertext).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Log.d("NAYAN", "Pick me from here clicked");
+                    }
+                }
+        );
         return v;
     }
 
@@ -117,11 +125,11 @@ public class MapsFragment extends Fragment implements DriverPositionManager.Driv
                 double longitude = location.getLongitude();
                 LatLng latLng = new LatLng(latitude, longitude);
                 CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng, 14);
+                Log.d("NAYAN", "myLocation = " + yourLocation.toString());
                 mMap.moveCamera(yourLocation);
                 mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
                     @Override
                     public void onCameraChange(CameraPosition cameraPosition) {
-                        Log.d("NAYAN", "OnCameraChange ");
                         new ComputeTravelTime(getActivity(), cameraPosition.target,
                                 new ComputeTravelTime.SelectedDriverDetails() {
                                     @Override

@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -6,16 +6,76 @@
         android:id="@+id/location_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.MapFragment"/>
+        android:name="com.google.android.gms.maps.MapFragment"
+        android:layout_centerInParent="true"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@color/search_field_bg">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pick up location"
+                android:layout_gravity="center_horizontal"
+                android:fontFamily="sans-serif-light"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:text="Go to pin"
+                android:singleLine="true"
+                android:textSize="16sp"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:scrollHorizontally="true"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif"
+                android:layout_marginTop="5dp"
+                android:layout_gravity="center_horizontal"
+                android:paddingStart="50dp"
+                android:paddingEnd="50dp"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_menu_search"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="15dp"/>
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_pin_drop_black_48dp"
+        android:contentDescription="@string/image_pin_drop"
+        android:layout_centerInParent="true"/>
 
     <LinearLayout
         android:id="@+id/locationMarker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:layout_above="@id/imageView1"
+        android:layout_centerHorizontal="true">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -67,13 +127,6 @@
                 android:textColor="@android:color/white"
                 android:contentDescription="@string/set_your_location"/>
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_pin_drop_black_48dp"
-            android:contentDescription="@string/image_pin_drop"/>
     </LinearLayout>
 
-</FrameLayout>
+</RelativeLayout>
