@@ -47,7 +47,8 @@
                 android:layout_marginTop="5dp"
                 android:layout_gravity="center_horizontal"
                 android:paddingStart="50dp"
-                android:paddingEnd="50dp"/>
+                android:paddingEnd="50dp"
+                android:id="@+id/goto_pin"/>
         </LinearLayout>
 
         <ImageView

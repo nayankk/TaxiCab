@@ -4,7 +4,10 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,6 +25,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.xc0ffee.taxicab.R;
 import com.xc0ffee.taxicab.utils.TaxiCabUtils;
 
+import java.io.IOException;
+import java.util.List;
+
 public class MapsFragment extends Fragment implements
         DriverPositionManager.DriverPositionListener,
         GooglePlayServicesManager.LocationUpdateListener,
@@ -32,6 +38,8 @@ public class MapsFragment extends Fragment implements
     private static MapsFragment mMapsFragment = null;
     private DriverPositionManager mDriversPosition = null;
     private static String TAG = "MapsFragment";
+
+    private TextView mLocationTextView;
 
     public static MapsFragment getInstance() {
         if (mMapsFragment == null) {
@@ -68,10 +76,18 @@ public class MapsFragment extends Fragment implements
                     @Override
                     public void onClick(View view) {
                         Log.d(TAG, "Pick me from here clicked");
+                        updateLocationInfo();
                     }
                 }
         );
+
+        mLocationTextView = (TextView) v.findViewById(R.id.goto_pin);
+
         return v;
+    }
+
+    private void updateLocationInfo() {
+
     }
 
     @Override
@@ -122,6 +138,7 @@ public class MapsFragment extends Fragment implements
     private void setUpMap() {
         mMap.setMyLocationEnabled(true);
         GooglePlayServicesManager.getMe(getActivity()).addLocationUpdateListner(this);
+        mMap.setOnCameraChangeListener(this);
     }
 
     @Override
@@ -151,7 +168,6 @@ public class MapsFragment extends Fragment implements
 
     @Override
     public void onLocationUpdated(Location location) {
-        adjustCameraPosition(location);
     }
 
     private void adjustCameraPosition(Location location) {
@@ -161,12 +177,14 @@ public class MapsFragment extends Fragment implements
             LatLng latLng = new LatLng(latitude, longitude);
             CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng, 15);
             mMap.moveCamera(yourLocation);
-            mMap.setOnCameraChangeListener(this);
         }
     }
 
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
+
+        new UpdateLocationInfo(cameraPosition.target).execute();
+
         new ComputeTravelTime(getActivity(), cameraPosition.target,
                 new ComputeTravelTime.SelectedDriverDetails() {
                     @Override
@@ -181,5 +199,47 @@ public class MapsFragment extends Fragment implements
                         });
                     }
                 });
+    }
+
+    private class UpdateLocationInfo extends AsyncTask<Void, Void, Address> {
+
+        private final LatLng mLocation;
+
+        public UpdateLocationInfo(LatLng location) {
+            mLocation = location;
+        }
+
+        @Override
+        protected Address doInBackground(Void... voids) {
+            Geocoder geocoder = new Geocoder(getActivity());
+            try {
+                List<Address> addresses = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1);
+                return addresses.get(0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Address address) {
+            super.onPostExecute(address);
+            if (address != null) {
+                String addressLine = "";
+                if (address.getSubThoroughfare() != null)
+                    addressLine += address.getSubThoroughfare();
+                if (address.getThoroughfare() != null && !address.getThoroughfare().equals("null")) {
+                    if (!addressLine.equals(""))
+                        addressLine += " ";
+                    addressLine += address.getThoroughfare();
+                }
+                if (address.getLocality() != null && !address.getLocality().equals("null")) {
+                    if (!addressLine.equals(""))
+                        addressLine += ", ";
+                    addressLine += address.getLocality();
+                }
+                mLocationTextView.setText(addressLine);
+            }
+        }
     }
 }
