@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -40,6 +41,10 @@ public class MapsFragment extends Fragment implements
     private static String TAG = "MapsFragment";
 
     private TextView mLocationTextView;
+
+    private LinearLayout mRequestTaxiLayout;
+
+    private LatLng mCameraPosition;
 
     public static MapsFragment getInstance() {
         if (mMapsFragment == null) {
@@ -76,18 +81,22 @@ public class MapsFragment extends Fragment implements
                     @Override
                     public void onClick(View view) {
                         Log.d(TAG, "Pick me from here clicked");
-                        updateLocationInfo();
+                        showRequestTaxi();
                     }
                 }
         );
 
         mLocationTextView = (TextView) v.findViewById(R.id.goto_pin);
 
+        mRequestTaxiLayout = (LinearLayout) v.findViewById(R.id.show_confirm_taxi);
+
         return v;
     }
 
-    private void updateLocationInfo() {
-
+    private void showRequestTaxi() {
+        mRequestTaxiLayout.animate().alpha(1.0f);
+        CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(mCameraPosition, 17);
+        mMap.moveCamera(yourLocation);
     }
 
     @Override
@@ -171,6 +180,7 @@ public class MapsFragment extends Fragment implements
     }
 
     private void adjustCameraPosition(Location location) {
+        mCameraPosition = new LatLng(location.getLatitude(), location.getLongitude());
         if (location != null) {
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
@@ -182,6 +192,8 @@ public class MapsFragment extends Fragment implements
 
     @Override
     public void onCameraChange(CameraPosition cameraPosition) {
+
+        mCameraPosition = cameraPosition.target;
 
         new UpdateLocationInfo(cameraPosition.target).execute();
 
