@@ -29,4 +29,5 @@
     <string name="image_pin_drop">Pin drop</string>
 
     <string name="api_key" translatable="false">AIzaSyDJ95ggg0cfLnZvU_78R6O_rpkG2yt16wk</string>
+    <string name="title_activity_driver_sign_up">DriverSignUpActivity</string>
 </resources>

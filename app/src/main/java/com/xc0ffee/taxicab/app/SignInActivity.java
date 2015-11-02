@@ -2,16 +2,19 @@ package com.xc0ffee.taxicab.app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.Toast;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.xc0ffee.taxicab.R;
+import com.xc0ffee.taxicab.signup.DriverSignUpActivity;
 import com.xc0ffee.taxicab.signup.SignUpActivity;
 import com.xc0ffee.taxicab.utils.TaxiCabUtils;
 
@@ -23,6 +26,7 @@ public class SignInActivity extends AppCompatActivity {
     private EditText mPassword;
     private Firebase mFirebaseRef;
     private ProgressDialog mProgressDialog;
+    private boolean isDriver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,13 +34,33 @@ public class SignInActivity extends AppCompatActivity {
 
         setContentView(R.layout.signin);
 
+        //Checks if the app user has checked "user" or "driver"
+        RadioButton rider = (RadioButton) findViewById(R.id.rider);
+        RadioButton driver = (RadioButton) findViewById(R.id.driver);
+        if(radioClick(rider)){
+            Toast.makeText(SignInActivity.this, "Rider selected", Toast.LENGTH_LONG);
+            isDriver = false;
+        }
+        if(radioClick(driver)){
+            Toast.makeText(SignInActivity.this, "Driver selected", Toast.LENGTH_LONG);
+            isDriver = true;
+        }
+
         findViewById(R.id.btn_signup).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(SignInActivity.this, SignUpActivity.class);
-                intent.putExtra(SignUpActivity.KEY_EMAIL, mEmailText.getText().toString());
-                intent.putExtra(SignUpActivity.KEY_PASSWORD, mPassword.getText().toString());
-                startActivityForResult(intent, 0);
+                if(!isDriver){
+                    Intent intent = new Intent(SignInActivity.this, SignUpActivity.class);
+                    intent.putExtra(SignUpActivity.KEY_EMAIL, mEmailText.getText().toString());
+                    intent.putExtra(SignUpActivity.KEY_PASSWORD, mPassword.getText().toString());
+                    startActivityForResult(intent, 0);
+                }
+                else{
+                    Intent intent = new Intent(SignInActivity.this, DriverSignUpActivity.class);
+                    intent.putExtra(SignUpActivity.KEY_EMAIL, mEmailText.getText().toString());
+                    intent.putExtra(SignUpActivity.KEY_PASSWORD, mPassword.getText().toString());
+                    startActivityForResult(intent, 0);
+                }
             }
         });
 
@@ -53,6 +77,9 @@ public class SignInActivity extends AppCompatActivity {
 
         Firebase.setAndroidContext(this);
         mFirebaseRef = new Firebase(TaxiCabMainActivity.FIREBASE_URL);
+
+
+
 
     }
 
@@ -111,4 +138,15 @@ public class SignInActivity extends AppCompatActivity {
             Toast.makeText(this, "Error while signing up. Please try again", Toast.LENGTH_LONG).show();
         }
     }
+
+    private boolean radioClick(View v){
+        RadioButton radio = (RadioButton)v;
+        if(radio.isChecked()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
 }

@@ -26,12 +26,36 @@
         android:layout_alignLeft="@+id/user_email"
         android:layout_alignStart="@+id/user_email" />
 
+    <RadioGroup
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content">
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="150dp"
+            android:layout_marginLeft="75dp"
+            android:text="I'm a rider"
+            android:textSize="18dp"
+            android:onClick="radio"
+            android:id="@+id/rider"/>
+
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_marginLeft="75dp"
+            android:text="I'm a Driver"
+            android:textSize="18dp"
+            android:onClick="radio"
+            android:id="@+id/driver"/>
+    </RadioGroup>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/signin"
         android:id="@+id/btn_signin"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="150dp"
         android:onClick="onSignUpClicked"
         android:layout_alignStart="@id/user_email"
         android:layout_alignLeft="@id/user_email"
@@ -45,6 +69,8 @@
         android:layout_below="@+id/user_passwd"
         android:layout_alignEnd="@id/user_email"
         android:layout_alignRight="@id/user_email"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="150dp"
         android:onClick="onSignUpClicked"/>
+
+
 </RelativeLayout>
