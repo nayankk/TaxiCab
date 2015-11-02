@@ -10,6 +10,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -109,6 +110,20 @@ public class MapsFragment extends Fragment implements
     public void onResume() {
         super.onResume();
         GooglePlayServicesManager.getMe(getActivity()).onResume();
+
+        getView().setFocusableInTouchMode(true);
+        getView().requestFocus();
+        getView().setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_UP &&
+                        keyCode == KeyEvent.KEYCODE_BACK) {
+                    onBackPressed();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     @Override
@@ -121,6 +136,12 @@ public class MapsFragment extends Fragment implements
     public void onDestroy() {
         super.onDestroy();
         mDriversPosition.deregisterDriverPositionListner();
+    }
+
+    private void onBackPressed() {
+        mRequestTaxiLayout.animate().alpha(0f);
+        CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(mCameraPosition, 15);
+        mMap.moveCamera(yourLocation);
     }
 
     @TargetApi(23)
