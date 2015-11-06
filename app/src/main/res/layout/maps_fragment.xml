@@ -198,6 +198,7 @@
             android:layout_marginEnd="10dp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
+            android:id="@+id/request_taxi"
             />
     </LinearLayout>
 

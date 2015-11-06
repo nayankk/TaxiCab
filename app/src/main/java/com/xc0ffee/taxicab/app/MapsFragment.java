@@ -47,6 +47,8 @@ public class MapsFragment extends Fragment implements
 
     private LatLng mCameraPosition;
 
+    private View mRequestTaxi;
+
     public static MapsFragment getInstance() {
         if (mMapsFragment == null) {
             mMapsFragment = new MapsFragment();
@@ -90,6 +92,17 @@ public class MapsFragment extends Fragment implements
         mLocationTextView = (TextView) v.findViewById(R.id.goto_pin);
 
         mRequestTaxiLayout = (LinearLayout) v.findViewById(R.id.show_confirm_taxi);
+
+        mRequestTaxi = v.findViewById(R.id.request_taxi);
+        mRequestTaxi.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "Request Taxi Clicked");
+                if (TaxiCabUtils.isTestStubEnabled()) {
+                    new UpdateDriverPositionStub(getActivity(), mCameraPosition).start();
+                }
+            }
+        });
 
         return v;
     }
@@ -172,7 +185,7 @@ public class MapsFragment extends Fragment implements
     }
 
     @Override
-    public void onDriverPositionChanged(DriverPositionManager.Driver driver) {
+    public void onDriverPositionChanged(Driver driver) {
         if (mMap == null)
             return;
         if (driver.getAvailable().equalsIgnoreCase("1")) {

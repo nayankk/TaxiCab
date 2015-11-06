@@ -1,6 +1,6 @@
 package com.xc0ffee.taxicab.app;
 
-import android.app.Activity;
+import android.content.Context;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -18,7 +18,7 @@ import cz.msebera.android.httpclient.Header;
 
 public class ComputeTravelTime {
 
-    private final Activity mActivity;
+    private final Context mActivity;
     private final LatLng mDest;
 
     private Firebase mFirebaseRef;
@@ -33,7 +33,7 @@ public class ComputeTravelTime {
         void onDriverSelected(String driveId, int travelTime);
     }
 
-    public ComputeTravelTime(final Activity activity, LatLng dest, SelectedDriverDetails listener) {
+    public ComputeTravelTime(final Context activity, LatLng dest, SelectedDriverDetails listener) {
         mActivity = activity;
         mDest = dest;
         mListener = listener;
@@ -42,7 +42,7 @@ public class ComputeTravelTime {
         mFirebaseRef = new Firebase("https://taxi-cab.firebaseio.com/");
         mFirebaseRef.child("drivers").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(final DataSnapshot dataSnapshot) {
                 computeNearestTime(dataSnapshot);
             }
 
@@ -55,12 +55,11 @@ public class ComputeTravelTime {
 
     private void computeNearestTime(DataSnapshot dataSnapshot) {
         for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-            DriverPositionManager.Driver driver = snapshot.getValue(
-                    DriverPositionManager.Driver.class);
+            Driver driver = snapshot.getValue(Driver.class);
             if (driver.getAvailable().equals("1")) {
                 String longitude = driver.getLongitude();
                 String latitude = driver.getLatitude();
-                compute(longitude, latitude, driver.getDriverid());
+                compute(longitude, latitude, snapshot.getKey());
                 mAvailableDrivers += 1;
             }
         }

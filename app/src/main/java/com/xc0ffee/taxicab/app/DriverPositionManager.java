@@ -38,30 +38,6 @@ public class DriverPositionManager {
         });
     }
 
-    public static class Driver {
-        private String longitude;
-        private String latitude;
-        private String driverid;
-        private String available;
-
-        public Driver() {
-        }
-        public String getLongitude() {
-            return longitude;
-        }
-        public String getLatitude() {
-            return latitude;
-        }
-
-        public String getDriverid() {
-            return driverid;
-        }
-
-        public String getAvailable() {
-            return available;
-        }
-    }
-
     public void registerDriverPositionListener(DriverPositionListener listener) {
         mListener = listener;
     }

@@ -13,4 +13,8 @@ public class TaxiCabUtils {
     public static boolean isM() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
+
+    public static boolean isTestStubEnabled() {
+        return true;
+    }
 }
