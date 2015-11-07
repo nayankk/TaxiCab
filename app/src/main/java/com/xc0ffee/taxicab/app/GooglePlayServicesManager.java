@@ -55,6 +55,7 @@ public class GooglePlayServicesManager implements
     }
 
     public void onResume() {
+        requestLocationUpdates();
     }
 
     public void onPause() {

@@ -13,6 +13,22 @@ public class DriverPositionManager {
     private Activity mActivity;
     private Firebase mFirebaseRef;
 
+    private ValueEventListener mValueListner = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                Driver driver = snapshot.getValue(Driver.class);
+                if (mListener != null)
+                    mListener.onDriverPositionChanged(driver);
+            }
+        }
+
+        @Override
+        public void onCancelled(FirebaseError firebaseError) {
+
+        }
+    };
+
     public interface DriverPositionListener {
         void onDriverPositionChanged(Driver driver);
     }
@@ -21,28 +37,15 @@ public class DriverPositionManager {
         mActivity = activity;
         Firebase.setAndroidContext(activity);
         mFirebaseRef = new Firebase("https://taxi-cab.firebaseio.com/");
-
-        mFirebaseRef.child("drivers").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
-                    Driver driver = snapshot.getValue(Driver.class);
-                    mListener.onDriverPositionChanged(driver);
-                }
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
     }
 
     public void registerDriverPositionListener(DriverPositionListener listener) {
         mListener = listener;
+        mFirebaseRef.child("drivers").addValueEventListener(mValueListner);
     }
 
     public void deregisterDriverPositionListner() {
         mListener = null;
+        mFirebaseRef.child("drivers").removeEventListener(mValueListner);
     }
 }

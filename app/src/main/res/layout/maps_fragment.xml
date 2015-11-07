@@ -2,12 +2,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <fragment
-        android:id="@+id/location_map"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:name="com.google.android.gms.maps.MapFragment"
-        android:layout_centerInParent="true"/>
+    <include layout="@layout/location_map"/>
 
     <RelativeLayout
         android:layout_width="match_parent"

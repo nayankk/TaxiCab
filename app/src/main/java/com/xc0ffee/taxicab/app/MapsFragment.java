@@ -49,6 +49,10 @@ public class MapsFragment extends Fragment implements
 
     private View mRequestTaxi;
 
+    private TaxiCabMainActivity mActivity;
+
+    private String mDriverId;
+
     public static MapsFragment getInstance() {
         if (mMapsFragment == null) {
             mMapsFragment = new MapsFragment();
@@ -67,7 +71,8 @@ public class MapsFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mDriversPosition = new DriverPositionManager(getActivity());
+        mActivity = (TaxiCabMainActivity) getActivity();
+        mDriversPosition = new DriverPositionManager(mActivity);
         mDriversPosition.registerDriverPositionListener(this);
     }
 
@@ -99,8 +104,11 @@ public class MapsFragment extends Fragment implements
             public void onClick(View view) {
                 Log.d(TAG, "Request Taxi Clicked");
                 if (TaxiCabUtils.isTestStubEnabled()) {
-                    new UpdateDriverPositionStub(getActivity(), mCameraPosition).start();
+                    new UpdateDriverPositionStub(mActivity, mCameraPosition).start();
                 }
+                mActivity.setUserLocation(mCameraPosition);
+                mActivity.setSelectedDriverId(mDriverId);
+                mActivity.showEnrouteFragment();
             }
         });
 
@@ -122,7 +130,7 @@ public class MapsFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        GooglePlayServicesManager.getMe(getActivity()).onResume();
+        GooglePlayServicesManager.getMe(mActivity).onResume();
 
         getView().setFocusableInTouchMode(true);
         getView().requestFocus();
@@ -142,7 +150,7 @@ public class MapsFragment extends Fragment implements
     @Override
     public void onPause() {
         super.onPause();
-        GooglePlayServicesManager.getMe(getActivity()).onPause();
+        GooglePlayServicesManager.getMe(mActivity).onPause();
     }
 
     @Override
@@ -160,15 +168,16 @@ public class MapsFragment extends Fragment implements
     @TargetApi(23)
     private void setupMapIfNeeded() {
         if (mMap == null) {
-            mMap = ((MapFragment) getChildFragmentManager().
-                    findFragmentById(R.id.location_map)).getMap();
+            MapFragment fragment = ((MapFragment) getChildFragmentManager().
+                    findFragmentById(R.id.location_map));
+            mMap = fragment.getMap();
             if (mMap != null) {
                 if (TaxiCabUtils.isM()) {
-                    if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    if (mActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
                         setUpMap();
                     } else {
-                        getActivity().requestPermissions(
+                        mActivity.requestPermissions(
                                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                                 TaxiCabMainActivity.LOCATION_PERMISSION_REQUEST_ID);
                     }
@@ -180,7 +189,7 @@ public class MapsFragment extends Fragment implements
 
     private void setUpMap() {
         mMap.setMyLocationEnabled(true);
-        GooglePlayServicesManager.getMe(getActivity()).addLocationUpdateListner(this);
+        GooglePlayServicesManager.getMe(mActivity).addLocationUpdateListner(this);
         mMap.setOnCameraChangeListener(this);
     }
 
@@ -196,8 +205,8 @@ public class MapsFragment extends Fragment implements
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                                           int[] grantResults) {
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == TaxiCabMainActivity.LOCATION_PERMISSION_REQUEST_ID) {
             setUpMap();
@@ -231,12 +240,12 @@ public class MapsFragment extends Fragment implements
 
         new UpdateLocationInfo(cameraPosition.target).execute();
 
-        new ComputeTravelTime(getActivity(), cameraPosition.target,
+        new ComputeTravelTime(mActivity, cameraPosition.target,
                 new ComputeTravelTime.SelectedDriverDetails() {
                     @Override
-                    public void onDriverSelected(String driveId,
-                                                 final int travelTime) {
-                        getActivity().runOnUiThread(new Runnable() {
+                    public void onDriverSelected(String driveId, final int travelTime) {
+                        mDriverId = driveId;
+                        mActivity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 ((TextView) getView().findViewById(R.id.travel_time))
@@ -257,7 +266,7 @@ public class MapsFragment extends Fragment implements
 
         @Override
         protected Address doInBackground(Void... voids) {
-            Geocoder geocoder = new Geocoder(getActivity());
+            Geocoder geocoder = new Geocoder(mActivity);
             try {
                 List<Address> addresses = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1);
                 return addresses.get(0);

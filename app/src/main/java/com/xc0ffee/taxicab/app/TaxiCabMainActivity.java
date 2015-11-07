@@ -17,6 +17,7 @@ import android.widget.ListView;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.google.android.gms.maps.model.LatLng;
 import com.xc0ffee.taxicab.R;
 import com.xc0ffee.taxicab.utils.ObscuredSharedPreferences;
 
@@ -43,11 +44,18 @@ public class TaxiCabMainActivity extends AppCompatActivity {
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
+
     private String[] mDrawerListItems = {STRING_PROFILE, STRING_LOGOUT};
 
     private GreetingsDialog mGreetingsDialog;
+
     private String mUsername;
+
     private String mPassword;
+
+    private LatLng mUserLocation = null;
+
+    private String mDriverSelected = null;
 
     private Firebase mFirebaseRef;
 
@@ -233,5 +241,28 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.maps_fragment, MapsFragment.getInstance());
         transaction.commitAllowingStateLoss();
+    }
+
+    public void showEnrouteFragment() {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.maps_fragment, TaxiEnrouteFragment.getInstance());
+        transaction.commitAllowingStateLoss();
+    }
+
+
+    public void setUserLocation(LatLng userLocation) {
+        mUserLocation = userLocation;
+    }
+
+    public LatLng getUserLocation() {
+        return mUserLocation;
+    }
+
+    public void setSelectedDriverId(String driverId) {
+        mDriverSelected = driverId;
+    }
+
+    public String getSelectedDriverId() {
+        return mDriverSelected;
     }
 }
