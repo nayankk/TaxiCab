@@ -2,19 +2,22 @@ package com.xc0ffee.taxicab.app;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -25,19 +28,24 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.xc0ffee.taxicab.R;
+import com.xc0ffee.taxicab.utils.ObscuredSharedPreferences;
 import com.xc0ffee.taxicab.utils.TaxiCabUtils;
 
 import java.io.IOException;
 import java.util.List;
 
-public class MapsFragment extends Fragment implements
+public class MapsActivity extends AppCompatActivity implements
         DriverPositionManager.DriverPositionListener,
         GooglePlayServicesManager.LocationUpdateListener,
         GoogleMap.OnCameraChangeListener {
 
+    private static final String STRING_PROFILE = "Your profile";
+    private static final String STRING_LOGOUT = "Logout";
+
+    private static final int LOCATION_PERMISSION_REQUEST_ID = 1 << 2;
+
     private GoogleMap mMap = null;
 
-    private static MapsFragment mMapsFragment = null;
     private DriverPositionManager mDriversPosition = null;
     private static String TAG = "MapsFragment";
 
@@ -49,42 +57,32 @@ public class MapsFragment extends Fragment implements
 
     private View mRequestTaxi;
 
-    private TaxiCabMainActivity mActivity;
-
     private String mDriverId;
 
-    public static MapsFragment getInstance() {
-        if (mMapsFragment == null) {
-            mMapsFragment = new MapsFragment();
-        }
-        return mMapsFragment;
-    }
+    private DrawerLayout mDrawerLayout;
 
-    public static void clear() {
-        if (mMapsFragment != null)
-            mMapsFragment = null;
-    }
+    private ListView mDrawerList;
 
-    public MapsFragment() {
-    }
+    private String[] mDrawerListItems = {STRING_PROFILE, STRING_LOGOUT};
+
+    private String mDriverSelected;
+
+    private LatLng mUserLocation;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mActivity = (TaxiCabMainActivity) getActivity();
-        mDriversPosition = new DriverPositionManager(mActivity);
+        setContentView(R.layout.maps_activity);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, mDrawerListItems));
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+        mDriversPosition = new DriverPositionManager(this);
         mDriversPosition.registerDriverPositionListener(this);
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        if (container == null)
-            return null;
-
-        View v = inflater.inflate(R.layout.maps_fragment, container, false);
-        v.findViewById(R.id.locationMarkertext).setOnClickListener(
+        findViewById(R.id.locationMarkertext).setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -94,63 +92,47 @@ public class MapsFragment extends Fragment implements
                 }
         );
 
-        mLocationTextView = (TextView) v.findViewById(R.id.goto_pin);
+        mLocationTextView = (TextView) findViewById(R.id.goto_pin);
 
-        mRequestTaxiLayout = (LinearLayout) v.findViewById(R.id.show_confirm_taxi);
+        mRequestTaxiLayout = (LinearLayout) findViewById(R.id.show_confirm_taxi);
 
-        mRequestTaxi = v.findViewById(R.id.request_taxi);
+        mRequestTaxi = findViewById(R.id.request_taxi);
+
         mRequestTaxi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "Request Taxi Clicked");
                 if (TaxiCabUtils.isTestStubEnabled()) {
-                    new UpdateDriverPositionStub(mActivity, mCameraPosition).start();
+                    new UpdateDriverPositionStub(MapsActivity.this, mCameraPosition).start();
                 }
-                mActivity.setUserLocation(mCameraPosition);
-                mActivity.setSelectedDriverId(mDriverId);
-                mActivity.showEnrouteFragment();
+                setUserLocation(mCameraPosition);
+                setSelectedDriverId(mDriverId);
+                showEnrouteFragment();
             }
         });
 
-        return v;
-    }
+        GooglePlayServicesManager.getMe(this);
 
-    private void showRequestTaxi() {
-        mRequestTaxiLayout.animate().alpha(1.0f);
-        CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(mCameraPosition, 17);
-        mMap.moveCamera(yourLocation);
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
         setupMapIfNeeded();
+    }
+
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        GooglePlayServicesManager.getMe(mActivity).onResume();
-
-        getView().setFocusableInTouchMode(true);
-        getView().requestFocus();
-        getView().setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_UP &&
-                        keyCode == KeyEvent.KEYCODE_BACK) {
-                    onBackPressed();
-                    return true;
-                }
-                return false;
-            }
-        });
+        GooglePlayServicesManager.getMe(this).onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        GooglePlayServicesManager.getMe(mActivity).onPause();
+        GooglePlayServicesManager.getMe(this).onPause();
     }
 
     @Override
@@ -159,27 +141,59 @@ public class MapsFragment extends Fragment implements
         mDriversPosition.deregisterDriverPositionListner();
     }
 
-    private void onBackPressed() {
-        mRequestTaxiLayout.animate().alpha(0f);
-        CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(mCameraPosition, 15);
+    @Override
+    public void onBackPressed() {
+        if (mRequestTaxiLayout.getAlpha() == 0f)
+            super.onBackPressed();
+        else {
+            mRequestTaxiLayout.animate().alpha(0f);
+            CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(mCameraPosition, 15);
+            mMap.moveCamera(yourLocation);
+        }
+    }
+
+    private void selectItem(int position) {
+        switch (mDrawerListItems[position]) {
+            case STRING_PROFILE:
+                Log.d("NAYAN", "Your profile clicked");
+                break;
+            case STRING_LOGOUT:
+                discardCredentials();
+                TaxiCabUtils.launchSignInActivity(this);
+                break;
+        }
+        mDrawerLayout.closeDrawers();
+    }
+
+    private void discardCredentials() {
+        try {
+            ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(
+                    this, getSharedPreferences(TaxiCabUtils.PREF_FILE_NAME, Context.MODE_PRIVATE));
+            obscuredPrefs.edit().putString(TaxiCabUtils.PREF_USERNAME, null).apply();
+            obscuredPrefs.edit().putString(TaxiCabUtils.PREF_PASSWORD, null).apply();
+        } catch (Exception e) {}
+    }
+
+    private void showRequestTaxi() {
+        mRequestTaxiLayout.animate().alpha(1.0f);
+        CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(mCameraPosition, 17);
         mMap.moveCamera(yourLocation);
     }
 
     @TargetApi(23)
     private void setupMapIfNeeded() {
         if (mMap == null) {
-            MapFragment fragment = ((MapFragment) getChildFragmentManager().
-                    findFragmentById(R.id.location_map));
+            MapFragment fragment = ((MapFragment) getFragmentManager().findFragmentById(R.id.location_map));
             mMap = fragment.getMap();
             if (mMap != null) {
                 if (TaxiCabUtils.isM()) {
-                    if (mActivity.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
                         setUpMap();
                     } else {
-                        mActivity.requestPermissions(
+                        requestPermissions(
                                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                TaxiCabMainActivity.LOCATION_PERMISSION_REQUEST_ID);
+                                LOCATION_PERMISSION_REQUEST_ID);
                     }
                 } else
                     setUpMap();
@@ -189,7 +203,7 @@ public class MapsFragment extends Fragment implements
 
     private void setUpMap() {
         mMap.setMyLocationEnabled(true);
-        GooglePlayServicesManager.getMe(mActivity).addLocationUpdateListner(this);
+        GooglePlayServicesManager.getMe(this).addLocationUpdateListner(this);
         mMap.setOnCameraChangeListener(this);
     }
 
@@ -208,7 +222,7 @@ public class MapsFragment extends Fragment implements
     public void onRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == TaxiCabMainActivity.LOCATION_PERMISSION_REQUEST_ID) {
+        if (requestCode == MapsActivity.LOCATION_PERMISSION_REQUEST_ID) {
             setUpMap();
         }
     }
@@ -240,15 +254,15 @@ public class MapsFragment extends Fragment implements
 
         new UpdateLocationInfo(cameraPosition.target).execute();
 
-        new ComputeTravelTime(mActivity, cameraPosition.target,
+        new ComputeTravelTime(this, cameraPosition.target,
                 new ComputeTravelTime.SelectedDriverDetails() {
                     @Override
                     public void onDriverSelected(String driveId, final int travelTime) {
                         mDriverId = driveId;
-                        mActivity.runOnUiThread(new Runnable() {
+                        MapsActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                ((TextView) getView().findViewById(R.id.travel_time))
+                                ((TextView)MapsActivity.this.findViewById(R.id.travel_time))
                                         .setText(Integer.toString(travelTime / 60));
                             }
                         });
@@ -266,10 +280,12 @@ public class MapsFragment extends Fragment implements
 
         @Override
         protected Address doInBackground(Void... voids) {
-            Geocoder geocoder = new Geocoder(mActivity);
+            Geocoder geocoder = new Geocoder(MapsActivity.this);
             try {
                 List<Address> addresses = geocoder.getFromLocation(mLocation.latitude, mLocation.longitude, 1);
-                return addresses.get(0);
+                if (addresses.size() > 0)
+                    return addresses.get(0);
+                return null;
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -296,5 +312,26 @@ public class MapsFragment extends Fragment implements
                 mLocationTextView.setText(addressLine);
             }
         }
+    }
+
+    public void setUserLocation(LatLng userLocation) {
+        mUserLocation = userLocation;
+    }
+
+    public LatLng getUserLocation() {
+        return mUserLocation;
+    }
+    public void setSelectedDriverId(String driverId) {
+        mDriverSelected = driverId;
+    }
+
+    public String getSelectedDriverId() {
+        return mDriverSelected;
+    }
+
+    private void showEnrouteFragment() {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        transaction.replace(R.id.maps_fragment, TaxiEnrouteFragment.getInstance());
+        transaction.commitAllowingStateLoss();
     }
 }

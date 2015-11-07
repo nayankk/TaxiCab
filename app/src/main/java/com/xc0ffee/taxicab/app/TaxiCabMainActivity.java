@@ -1,33 +1,24 @@
 package com.xc0ffee.taxicab.app;
 
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.google.android.gms.maps.model.LatLng;
 import com.xc0ffee.taxicab.R;
 import com.xc0ffee.taxicab.utils.ObscuredSharedPreferences;
+import com.xc0ffee.taxicab.utils.TaxiCabUtils;
 
 import java.security.NoSuchAlgorithmException;
 
 public class TaxiCabMainActivity extends AppCompatActivity {
 
-    final static private String PREF_FILE_NAME = "secret.xml";
-    final static private String PREF_USERNAME = "username";
-    final static private String PREF_PASSWORD = "password";
     final static private String PREF_KEY = "unknown";
     final static private String DEFAULT_KEY = "UNKNOWN_KEY";
 
@@ -35,27 +26,13 @@ public class TaxiCabMainActivity extends AppCompatActivity {
     final static public String KEY_USERNAME = "key_user_name";
     final static public String KEY_PASSWORD = "key_password";
 
-    final static public int LOCATION_PERMISSION_REQUEST_ID = 1;
-
     private static final String TAG = "TaxiCabMainActivity";
-
-    private static final String STRING_PROFILE = "Your profile";
-    private static final String STRING_LOGOUT = "Logout";
-
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-
-    private String[] mDrawerListItems = {STRING_PROFILE, STRING_LOGOUT};
 
     private GreetingsDialog mGreetingsDialog;
 
     private String mUsername;
 
     private String mPassword;
-
-    private LatLng mUserLocation = null;
-
-    private String mDriverSelected = null;
 
     private Firebase mFirebaseRef;
 
@@ -64,11 +41,6 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_taxi_cab_main);
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        mDrawerList.setAdapter(new ArrayAdapter<>(this, R.layout.drawer_list_item, mDrawerListItems));
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-
         mGreetingsDialog = new GreetingsDialog(this);
         mGreetingsDialog.show();
 
@@ -76,8 +48,6 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         mFirebaseRef = new Firebase(FIREBASE_URL);
 
         new CheckUserCredentials().execute();
-
-        GooglePlayServicesManager.getMe(this);
     }
 
     @Override
@@ -89,7 +59,6 @@ public class TaxiCabMainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         hideGreetings();
-        MapsFragment.clear();
     }
 
     private void hideGreetings() {
@@ -104,29 +73,29 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
 
             // First get the key
-            final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE);
+            final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(TaxiCabUtils.PREF_FILE_NAME, Context.MODE_PRIVATE);
             String key = prefs.getString(PREF_KEY, null);
             if (key == null) {
                 try {
                     key = ObscuredSharedPreferences.generateKey();
-                    prefs.edit().putString(PREF_KEY, key).commit();
+                    prefs.edit().putString(PREF_KEY, key).apply();
                 } catch (NoSuchAlgorithmException e) {
                     key = DEFAULT_KEY;
-                    prefs.edit().putString(PREF_KEY, key).commit();
+                    prefs.edit().putString(PREF_KEY, key).apply();
                 }
             }
 
             try {
                 ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(TaxiCabMainActivity.this,
-                        TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE));
+                        TaxiCabMainActivity.this.getSharedPreferences(TaxiCabUtils.PREF_FILE_NAME, Context.MODE_PRIVATE));
                 obscuredPrefs.setKey(key);
-                if (obscuredPrefs.getString(PREF_USERNAME, null) == null ||
-                        obscuredPrefs.getString(PREF_PASSWORD, null) == null) {
+                if (obscuredPrefs.getString(TaxiCabUtils.PREF_USERNAME, null) == null ||
+                        obscuredPrefs.getString(TaxiCabUtils.PREF_PASSWORD, null) == null) {
                     return Boolean.FALSE;
                 }
 
-                mUsername = obscuredPrefs.getString(PREF_USERNAME, null);
-                mPassword = obscuredPrefs.getString(PREF_PASSWORD, null);
+                mUsername = obscuredPrefs.getString(TaxiCabUtils.PREF_USERNAME, null);
+                mPassword = obscuredPrefs.getString(TaxiCabUtils.PREF_PASSWORD, null);
                 if (mUsername == null || mPassword == null)
                     return Boolean.FALSE;
                 return Boolean.TRUE;
@@ -143,7 +112,7 @@ public class TaxiCabMainActivity extends AppCompatActivity {
                 // Launch sign-in activity
                 Log.d(TAG, "No saved session, launch login activity");
                 hideGreetings();
-                launchSignInActivity();
+                TaxiCabUtils.launchSignInActivity(TaxiCabMainActivity.this);
             } else {
                 mFirebaseRef.authWithPassword(mUsername, mPassword, new Firebase.AuthResultHandler() {
                     @Override
@@ -163,13 +132,15 @@ public class TaxiCabMainActivity extends AppCompatActivity {
 
     private void onUserAuthenticated() {
         hideGreetings();
-        showMapsFragment();
+        showMapsActivity();
     }
 
-    private void launchSignInActivity() {
-        Intent intent = new Intent(TaxiCabMainActivity.this, SignInActivity.class);
-        startActivityForResult(intent, 0);
+    public void showMapsActivity() {
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+        finish();
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
@@ -186,7 +157,8 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE);
+                final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(
+                        TaxiCabUtils.PREF_FILE_NAME, Context.MODE_PRIVATE);
                 String key = prefs.getString(PREF_KEY, null);
                 if (key == null) {
                     try {
@@ -199,70 +171,13 @@ public class TaxiCabMainActivity extends AppCompatActivity {
                 }
 
                 ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(TaxiCabMainActivity.this,
-                        TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE));
+                        TaxiCabMainActivity.this.getSharedPreferences(TaxiCabUtils.PREF_FILE_NAME, Context.MODE_PRIVATE));
                 obscuredPrefs.setKey(key);
 
-                obscuredPrefs.edit().putString(PREF_USERNAME, data.getStringExtra(KEY_USERNAME)).commit();
-                obscuredPrefs.edit().putString(PREF_PASSWORD, data.getStringExtra(KEY_PASSWORD)).commit();
+                obscuredPrefs.edit().putString(TaxiCabUtils.PREF_USERNAME, data.getStringExtra(KEY_USERNAME)).apply();
+                obscuredPrefs.edit().putString(TaxiCabUtils.PREF_PASSWORD, data.getStringExtra(KEY_PASSWORD)).apply();
             }
         }).run();
     }
 
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
-        }
-    }
-
-    private void selectItem(int position) {
-        switch (mDrawerListItems[position]) {
-            case STRING_PROFILE:
-                Log.d("NAYAN", "Your profile clicked");
-                break;
-            case STRING_LOGOUT:
-                discardCredentials();
-                launchSignInActivity();
-                break;
-        }
-        mDrawerLayout.closeDrawers();
-    }
-
-    private void discardCredentials() {
-        try {
-            ObscuredSharedPreferences obscuredPrefs = new ObscuredSharedPreferences(TaxiCabMainActivity.this,
-                    TaxiCabMainActivity.this.getSharedPreferences(PREF_FILE_NAME, Context.MODE_PRIVATE));
-            obscuredPrefs.edit().putString(PREF_USERNAME, null).apply();
-            obscuredPrefs.edit().putString(PREF_PASSWORD, null).apply();
-        } catch (Exception e) {}
-    }
-
-    private void showMapsFragment() {
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.maps_fragment, MapsFragment.getInstance());
-        transaction.commitAllowingStateLoss();
-    }
-
-    public void showEnrouteFragment() {
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.maps_fragment, TaxiEnrouteFragment.getInstance());
-        transaction.commitAllowingStateLoss();
-    }
-
-
-    public void setUserLocation(LatLng userLocation) {
-        mUserLocation = userLocation;
-    }
-
-    public LatLng getUserLocation() {
-        return mUserLocation;
-    }
-
-    public void setSelectedDriverId(String driverId) {
-        mDriverSelected = driverId;
-    }
-
-    public String getSelectedDriverId() {
-        return mDriverSelected;
-    }
 }

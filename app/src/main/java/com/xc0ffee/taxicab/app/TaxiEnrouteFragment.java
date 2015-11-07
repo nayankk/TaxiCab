@@ -25,7 +25,7 @@ public class TaxiEnrouteFragment extends Fragment implements
 
     private static TaxiEnrouteFragment mTaxiEnroute;
 
-    private TaxiCabMainActivity mActivity;
+    private MapsActivity mActivity;
 
     private GoogleMap mMap = null;
 
@@ -75,7 +75,7 @@ public class TaxiEnrouteFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mActivity = (TaxiCabMainActivity) getActivity();
+        mActivity = (MapsActivity) getActivity();
     }
 
     @Override

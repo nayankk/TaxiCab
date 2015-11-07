@@ -33,6 +33,8 @@ public class GooglePlayServicesManager implements
 
     private boolean mRequestingLocationUpdates = false;
 
+    private boolean mConnected = false;
+
     private LocationRequest mLocationRequest = null;
     public static GooglePlayServicesManager getMe(Activity activity) {
         if (mGooglePlayServicesManager == null)
@@ -59,7 +61,8 @@ public class GooglePlayServicesManager implements
     }
 
     public void onPause() {
-        stopLocationUpdates();
+        if (mConnected)
+            stopLocationUpdates();
     }
 
     public void requestLocationUpdates() {
@@ -87,6 +90,7 @@ public class GooglePlayServicesManager implements
             startLocationUpdates();
             mRequestingLocationUpdates = false;
         }
+        mConnected = true;
     }
 
     @Override
