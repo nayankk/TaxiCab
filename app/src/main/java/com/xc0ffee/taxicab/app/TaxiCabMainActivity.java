@@ -1,12 +1,15 @@
 package com.xc0ffee.taxicab.app;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
@@ -27,6 +30,8 @@ public class TaxiCabMainActivity extends AppCompatActivity {
     final static public String KEY_PASSWORD = "key_password";
 
     private static final String TAG = "TaxiCabMainActivity";
+
+    private static final int LOCATION_PERMISSION_REQUEST_ID = 1 << 2;
 
     private GreetingsDialog mGreetingsDialog;
 
@@ -73,7 +78,8 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
 
             // First get the key
-            final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(TaxiCabUtils.PREF_FILE_NAME, Context.MODE_PRIVATE);
+            final SharedPreferences prefs = TaxiCabMainActivity.this.getSharedPreferences(
+                    TaxiCabUtils.PREF_FILE_NAME, Context.MODE_PRIVATE);
             String key = prefs.getString(PREF_KEY, null);
             if (key == null) {
                 try {
@@ -124,6 +130,7 @@ public class TaxiCabMainActivity extends AppCompatActivity {
                     @Override
                     public void onAuthenticationError(FirebaseError firebaseError) {
                         Log.d(TAG, "Authentication error");
+                        TaxiCabUtils.launchSignInActivity(TaxiCabMainActivity.this);
                     }
                 });
             }
@@ -132,7 +139,16 @@ public class TaxiCabMainActivity extends AppCompatActivity {
 
     private void onUserAuthenticated() {
         hideGreetings();
-        showMapsActivity();
+        if (TaxiCabUtils.isM()) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                showMapsActivity();
+            } else {
+                requestPermissions(
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_ID);
+            }
+        } else
+            showMapsActivity();
     }
 
     public void showMapsActivity() {
@@ -140,7 +156,6 @@ public class TaxiCabMainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
@@ -150,6 +165,20 @@ public class TaxiCabMainActivity extends AppCompatActivity {
             finish();
         else if (resultCode == RESULT_OK) {
             secureStoreCredentials(data);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(
+            int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_ID) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                showMapsActivity();
+            else {
+                Toast.makeText(this, "No permission", Toast.LENGTH_SHORT).show();
+                finish();
+            }
         }
     }
 

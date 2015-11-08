@@ -11,35 +11,24 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.xc0ffee.taxicab.R;
 
-public class TaxiEnrouteFragment extends Fragment implements
-        OnMapReadyCallback {
+public class TaxiEnrouteFragment extends Fragment {
 
     private static TaxiEnrouteFragment mTaxiEnroute;
 
     private MapsActivity mActivity;
-
-    private GoogleMap mMap = null;
-
     private Firebase mFirebaseRef;
 
     private ValueEventListener mValueListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            Driver driver = dataSnapshot.getValue(Driver.class);
+            Driver driver = dataSnapshot.getValue(Driver.class);/*
             if (mMap != null) {
                 LatLng position = new LatLng(Double.valueOf(driver.getLongitude()),
                         Double.valueOf(driver.getLatitude()));
                 mMap.addMarker(new MarkerOptions().position(position).title(driver.getDriverid()));
-            }
+            }*/
         }
 
         @Override
@@ -69,7 +58,6 @@ public class TaxiEnrouteFragment extends Fragment implements
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setupMapIfNeeded();
     }
 
     @Override
@@ -90,27 +78,6 @@ public class TaxiEnrouteFragment extends Fragment implements
         super.onPause();
         GooglePlayServicesManager.getMe(mActivity).onPause();
         stopDriverPosUpdate();
-        mMap = null;
-    }
-
-    private void setupMapIfNeeded() {
-        if (mMap == null)
-            ((MapFragment) getChildFragmentManager().findFragmentById(R.id.location_map)).getMapAsync(this);
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        setupMap();
-    }
-
-    private void setupMap() {
-        if (mMap != null) {
-            mMap.setMyLocationEnabled(true);
-            CameraUpdate userLocation = CameraUpdateFactory.newLatLngZoom(mActivity.getUserLocation(), 12);
-            mMap.moveCamera(userLocation);
-        }
-        startDriverPosUpdate();
     }
 
     private void startDriverPosUpdate() {
