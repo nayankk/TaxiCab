@@ -1,5 +1,6 @@
 package com.example.anishmuthali.signupexample;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,32 +30,21 @@ public class SignUp extends AppCompatActivity {
                 EditText idEnter = (EditText) findViewById(R.id.bff);
                 Firebase ref = mRef.child("drivers").child(name.getText().toString());
                 int id = new Integer(idEnter.getText().toString()).intValue();
-                User alan = new User(name.getText().toString(), id);
-                ref.setValue(alan);
-                (ref.child("name")).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        TextView text = (TextView) findViewById(R.id.nameText);
-                        text.setText("Name entered: " + snapshot.getValue().toString());
-                    }
-
-                    @Override
-                    public void onCancelled(FirebaseError firebaseError) {
-                        System.out.println("The read failed: " + firebaseError.getMessage());
-                    }
-                });
-                (ref.child("driverId")).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        TextView text = (TextView) findViewById(R.id.idText);
-                        text.setText("ID entered: " + snapshot.getValue().toString());
-                    }
-
-                    @Override
-                    public void onCancelled(FirebaseError firebaseError) {
-                        System.out.println("The read failed: " + firebaseError.getMessage());
-                    }
-                });
+                String carType;
+                if(id >= 1000){
+                    carType = "luxury";
+                }
+                else{
+                    carType = "economy";
+                }
+                User driver = new User(name.getText().toString(), id, carType);
+                ref.setValue(driver);
+                Intent intent = new Intent(SignUp.this, WelcomeDriver.class);
+                String nameString = name.getText().toString();
+                System.out.println(nameString);
+                intent.putExtra("driver-name", nameString);
+                intent.putExtra("car-type", carType);
+                startActivity(intent);
             }
         });
     }
