@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">TaxiCab</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="greetings">Taxi Cab</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="signin">Sign In</string>
+    <string name="signup">Signup</string>
+    <string name="email_invalid">Invalid Email</string>
+    <string name="login_failure">Login failure, please try again</string>
+    <string name="name">Name</string>
+    <string name="phone_number">Phone number</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="passwd_mismatch">Password mismatch. Please retry.</string>
+    <string name="required_fields">One or more fields are missing.</string>
+    <string name="sms_verification_msg">We will send an SMS to %1$s number and automatically verify telephone number.</string>
+    <string name="sms_verification">SMS verification</string>
+    <string name="sms_sending_failed">Verification failed. Please try after some time</string>
+    <string name="sms_verification_indicator">Please wait while we verify your phone number. This can take upto 2 minutes.</string>
+    <string name="cont">Continue</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="wait_time_infinte">--</string>
+    <string name="wait_minutes">MIN</string>
+    <string name="set_your_location">Set your Location</string>
+    <string name="image_pin_drop">Pin drop</string>
+
+    <string name="api_key" translatable="false">AIzaSyDJ95ggg0cfLnZvU_78R6O_rpkG2yt16wk</string>
+</resources>
