@@ -45,6 +45,7 @@ public class SignUp extends AppCompatActivity {
                 intent.putExtra("driver-name", nameString);
                 intent.putExtra("car-type", carType);
                 startActivity(intent);
+
             }
         });
     }

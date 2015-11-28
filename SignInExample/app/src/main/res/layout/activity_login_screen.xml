@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".loginScreen"
+    android:orientation="vertical">
+
+    <EditText
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:hint="Enter name"
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="50dp"
+        android:inputType="textPersonName"
+        android:id="@+id/nameedit"/>
+    <EditText
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:hint="Enter ID"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="50dp"
+        android:inputType="numberPassword"
+        android:id="@+id/idedit"/>
+
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="100dp"
+        android:text="Sign in"
+        android:id="@+id/signbutton"/>
+</LinearLayout>
